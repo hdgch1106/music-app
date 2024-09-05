@@ -22,3 +22,9 @@ flutter:
 
   assets:
     - assets/icons/
+    - assets/imgs/
+  
+  fonts:
+    - family: Satoshi
+      fonts:
+        - asset: fonts/Satoshi-Regular.otf

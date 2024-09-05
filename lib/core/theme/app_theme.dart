@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music_app/core/core.dart';
 import 'colors_custom.dart';
 
 class AppTheme {
@@ -9,6 +10,7 @@ class AppTheme {
         scaffoldBackgroundColor: ColorsCustom.darkBackground,
         colorScheme: const ColorScheme.dark(
           primary: ColorsCustom.darkPrimary,
+          secondary: ColorsCustom.blue,
           //secondary: ColorsCustom.secondary,
         ),
         appBarTheme: const AppBarTheme(

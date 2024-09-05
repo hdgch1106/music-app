@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:music_app/features/home/presentation/presentation.dart';
 import 'package:music_app/features/main_layout/presentation/presentation.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -30,7 +31,7 @@ final appRouter = GoRouter(
               pageBuilder: (context, state) {
                 return NoTransitionPage(
                   key: state.pageKey,
-                  child: Container(),
+                  child: const HomeView(),
                 );
               },
               // routes: [

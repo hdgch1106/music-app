@@ -55,8 +55,8 @@ class CustomBottomNavigationbar extends StatelessWidget {
                         color: currentIndex == index
                             ? theme.navBarItemColor
                             : Colors.grey.shade500,
-                        width: 25,
-                        height: 25,
+                        width: 30,
+                        height: 30,
                       ),
                       Text(
                         item.name,

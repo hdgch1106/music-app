@@ -14,17 +14,29 @@ class MainLayoutScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Scaffold(
-          body: body,
-          bottomNavigationBar: CustomBottomNavigationbar(
-            currentIndex: selectedIndex,
-            items: items,
-            onDestinationSelected: onDestinationSelected,
+    final size = MediaQuery.of(context).size;
+    return Scaffold(
+      body: Stack(
+        children: [
+          Padding(
+            padding: EdgeInsets.only(top: size.height * 0.1),
+            child: Center(
+              child: Image.asset(
+                'assets/imgs/background.png',
+                fit: BoxFit.contain,
+                alignment: Alignment.center,
+                height: size.height * 0.5,
+              ),
+            ),
           ),
-        ),
-      ],
+          body,
+        ],
+      ),
+      bottomNavigationBar: CustomBottomNavigationbar(
+        currentIndex: selectedIndex,
+        items: items,
+        onDestinationSelected: onDestinationSelected,
+      ),
     );
   }
 }
