@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:music_app/core/core.dart';
+import 'package:music_app/features/music/presentation/presentation.dart';
 
 class MusicsHorizontal extends StatelessWidget {
   const MusicsHorizontal({super.key});
@@ -19,11 +22,12 @@ class MusicsHorizontal extends StatelessWidget {
           height: size.height * 0.26,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: musics.length,
+            itemCount: musicSpecial.length,
             itemBuilder: (context, index) {
               return _CustomMusicCard(
                 size: size,
-                musicUtil: musics[index],
+                musicUtil: musicSpecial[index],
+                index: index,
               );
             },
           ),
@@ -33,21 +37,23 @@ class MusicsHorizontal extends StatelessWidget {
   }
 }
 
-class _CustomMusicCard extends StatelessWidget {
+class _CustomMusicCard extends ConsumerWidget {
   const _CustomMusicCard({
     required this.size,
     required this.musicUtil,
+    required this.index,
   });
 
   final MusicUtil musicUtil;
   final Size size;
+  final int index;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: EdgeInsets.only(right: size.width * 0.03),
       child: SizedBox(
-        width: size.width * 0.5,
+        width: size.width * 0.8,
         child: Card(
           color: Colors.black.withOpacity(0.3),
           shape: RoundedRectangleBorder(
@@ -58,30 +64,38 @@ class _CustomMusicCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Stack(
-                  children: [
-                    Container(
-                      height: size.height * 0.15,
-                      width: size.width * 0.5,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        image: DecorationImage(
-                          image: AssetImage(musicUtil.imagePath),
-                          fit: BoxFit.cover,
+                GestureDetector(
+                  onTap: () {
+                    ref
+                        .read(musicProvider.notifier)
+                        .setPlaylist(musicSpecial, index);
+                    context.push("/music", extra: musicUtil);
+                  },
+                  child: Stack(
+                    children: [
+                      Container(
+                        height: size.height * 0.15,
+                        width: size.width * 0.8,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          image: DecorationImage(
+                            image: AssetImage(musicUtil.imagePath),
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
-                    ),
-                    const Positioned.fill(
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: Icon(
-                          Icons.play_circle_outline_sharp,
-                          size: 32,
-                          color: Colors.white,
+                      const Positioned.fill(
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Icon(
+                            Icons.play_circle_outline_sharp,
+                            size: 32,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 SizedBox(height: size.height * 0.01),
                 Row(

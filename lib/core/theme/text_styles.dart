@@ -6,6 +6,12 @@ TextStyle getHeaderStyle() => const TextStyle(
       fontFamily: 'Satoshi',
     );
 
+TextStyle getTitleStyle() => const TextStyle(
+      fontSize: 22,
+      fontFamily: 'Satoshi',
+      fontWeight: FontWeight.bold,
+    );
+
 TextStyle getSubtitleStyle() => const TextStyle(
       fontSize: 15,
       fontFamily: 'Satoshi',

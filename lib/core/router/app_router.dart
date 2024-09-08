@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:music_app/core/core.dart';
+import 'package:music_app/features/downloads/presentation/presentation.dart';
 import 'package:music_app/features/home/presentation/presentation.dart';
 import 'package:music_app/features/main_layout/presentation/presentation.dart';
+import 'package:music_app/features/music/presentation/presentation.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shell1NavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell1');
@@ -34,20 +37,6 @@ final appRouter = GoRouter(
                   child: const HomeView(),
                 );
               },
-              // routes: [
-              //   GoRoute(
-              //     path: 'services',
-              //     pageBuilder: (context, state) {
-              //       final viewUtil = state.extra as ServicesViewUtil;
-              //       return NoTransitionPage(
-              //         key: state.pageKey,
-              //         child: ServicesView(
-              //           viewUtil: viewUtil,
-              //         ),
-              //       );
-              //     },
-              //   ),
-              // ],
             ),
           ],
         ),
@@ -73,7 +62,7 @@ final appRouter = GoRouter(
               pageBuilder: (context, state) {
                 return NoTransitionPage(
                   key: state.pageKey,
-                  child: Container(),
+                  child: const DownloadsView(),
                 );
               },
             ),
@@ -94,6 +83,16 @@ final appRouter = GoRouter(
           ],
         )
       ],
+    ),
+    //Pantalla de música
+    GoRoute(
+      path: '/music',
+      pageBuilder: (context, state) {
+        return NoTransitionPage(
+          key: state.pageKey,
+          child: const MusicScreen(),
+        );
+      },
     ),
   ],
 );
