@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:music_app/core/core.dart';
@@ -40,7 +42,7 @@ class MusicNotifier extends StateNotifier<MusicState> {
         await state.audioPlayer!.dispose();
       } catch (e) {
         // Handle exception
-        print('Exception in stopAndDispose: $e');
+        log('Exception in stopAndDispose: $e');
       }
 
       _isDisposed = true;

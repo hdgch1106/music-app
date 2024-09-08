@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:music_app/core/core.dart';
 import 'package:music_app/features/downloads/presentation/presentation.dart';
+import 'package:music_app/features/favorites/presentation/views/favorites_view.dart';
 import 'package:music_app/features/home/presentation/presentation.dart';
 import 'package:music_app/features/main_layout/presentation/presentation.dart';
 import 'package:music_app/features/music/presentation/presentation.dart';
@@ -48,7 +48,7 @@ final appRouter = GoRouter(
               pageBuilder: (context, state) {
                 return NoTransitionPage(
                   key: state.pageKey,
-                  child: Container(),
+                  child: const FavoritesView(),
                 );
               },
             ),

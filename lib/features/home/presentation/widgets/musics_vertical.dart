@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:music_app/core/core.dart';
@@ -15,12 +14,25 @@ class MusicsVertical extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Musica Lo-fi",
+          SlideInText(
+            text: "Musica Lo-fi",
             style: getSubtitleStyle().copyWith(fontWeight: FontWeight.bold),
+            duration: const Duration(milliseconds: 2000),
           ),
           SizedBox(height: size.height * 0.02),
           Expanded(
+            child: SlidingListVertical(
+              children: List.generate(
+                musicLofi.length,
+                (index) => _CustomMusicCard(
+                  size: size,
+                  musicUtil: musicLofi[index],
+                  index: index,
+                ),
+              ),
+            ),
+          ),
+          /* Expanded(
             child: ListView.builder(
               shrinkWrap: true,
               scrollDirection: Axis.vertical,
@@ -33,7 +45,7 @@ class MusicsVertical extends StatelessWidget {
                 );
               },
             ),
-          ),
+          ), */
         ],
       ),
     );
@@ -53,6 +65,11 @@ class _CustomMusicCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isFavorite = ref
+        .watch(favoriteProvider)
+        .savedMusic
+        .containsKey(musicUtil.id.toString());
+
     return Padding(
       padding: EdgeInsets.only(right: size.width * 0.03),
       child: SizedBox(
@@ -118,8 +135,14 @@ class _CustomMusicCard extends ConsumerWidget {
                 ),
                 const Spacer(),
                 IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.favorite_border),
+                  onPressed: () async {
+                    await ref
+                        .read(favoriteProvider.notifier)
+                        .saveMusic(musicUtil);
+                  },
+                  icon: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                  ),
                   color: Colors.white,
                 ),
               ],

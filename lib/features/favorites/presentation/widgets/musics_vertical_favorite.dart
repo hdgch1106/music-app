@@ -4,28 +4,29 @@ import 'package:go_router/go_router.dart';
 import 'package:music_app/core/core.dart';
 import 'package:music_app/features/music/presentation/presentation.dart';
 
-class MusicsVerticalDownloads extends StatelessWidget {
-  const MusicsVerticalDownloads({super.key});
+class MusicsVerticalFavorite extends ConsumerWidget {
+  const MusicsVerticalFavorite({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final size = MediaQuery.of(context).size;
+    final savedMusics = ref.watch(favoriteProvider).savedMusic;
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "${musicLofi.length} audios",
+            "${savedMusics.length} audios",
             style: getSubtitleStyle().copyWith(fontWeight: FontWeight.bold),
           ),
           SizedBox(height: size.height * 0.02),
           Expanded(
             child: SlidingListVertical(
               children: List.generate(
-                musicLofi.length,
+                savedMusics.length,
                 (index) => _CustomMusicCard(
                   size: size,
-                  musicUtil: musicLofi[index],
+                  musicUtil: savedMusics.values.elementAt(index),
                   index: index,
                 ),
               ),
@@ -35,11 +36,11 @@ class MusicsVerticalDownloads extends StatelessWidget {
             child: ListView.builder(
               shrinkWrap: true,
               scrollDirection: Axis.vertical,
-              itemCount: musicLofi.length,
+              itemCount: savedMusics.length,
               itemBuilder: (context, index) {
                 return _CustomMusicCard(
                   size: size,
-                  musicUtil: musicLofi[index],
+                  musicUtil: savedMusics.values.elementAt(index),
                   index: index,
                 );
               },
@@ -64,10 +65,10 @@ class _CustomMusicCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isFavorite = ref
-        .watch(favoriteProvider)
-        .savedMusic
-        .containsKey(musicUtil.id.toString());
+    final savedMusics = ref.watch(favoriteProvider).savedMusic;
+
+    final isFavorite = savedMusics.containsKey(musicUtil.id.toString());
+
     return Padding(
       padding: EdgeInsets.only(right: size.width * 0.03),
       child: SizedBox(
@@ -84,9 +85,10 @@ class _CustomMusicCard extends ConsumerWidget {
               children: [
                 GestureDetector(
                   onTap: () {
-                    ref
-                        .read(musicProvider.notifier)
-                        .setPlaylist(musicLofi, index);
+                    ref.read(musicProvider.notifier).setPlaylist(
+                          savedMusics.values.toList(),
+                          index,
+                        );
                     context.push("/music", extra: musicUtil);
                   },
                   child: Stack(

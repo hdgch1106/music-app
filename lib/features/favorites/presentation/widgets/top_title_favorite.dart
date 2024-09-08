@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:music_app/core/core.dart';
 
-class TopTitleDownload extends StatelessWidget {
-  const TopTitleDownload({super.key});
+class TopTitleFavorite extends StatelessWidget {
+  const TopTitleFavorite({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -10,12 +10,12 @@ class TopTitleDownload extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Aqui tienes",
+        SlideInText(
+          text: "Aqui tienes",
           style: getHeaderStyle(),
         ),
-        Text(
-          "tus descargas",
+        SlideInText(
+          text: "tus favoritos",
           style: getHeaderStyle().copyWith(
             color: theme.colorScheme.secondary,
           ),

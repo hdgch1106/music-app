@@ -1,20 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:music_app/core/core.dart';
 
-class TopTitle extends StatelessWidget {
-  const TopTitle({super.key});
-
-  String getGreeting() {
-    final hour = DateTime.now().hour;
-
-    if (hour < 12) {
-      return 'Buenos días,';
-    } else if (hour < 18) {
-      return 'Buenas tardes,';
-    } else {
-      return 'Buenas noches,';
-    }
-  }
+class TopTitleDownload extends StatelessWidget {
+  const TopTitleDownload({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,11 +11,11 @@ class TopTitle extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SlideInText(
-          text: getGreeting(),
+          text: "Aqui tienes",
           style: getHeaderStyle(),
         ),
         SlideInText(
-          text: "Hugo",
+          text: "tus descargas",
           style: getHeaderStyle().copyWith(
             color: theme.colorScheme.secondary,
           ),

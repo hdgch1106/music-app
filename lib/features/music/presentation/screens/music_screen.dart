@@ -23,6 +23,11 @@ class MusicScreen extends ConsumerWidget {
 
     final musicUtil = musicPv.playlist[musicPv.currentSongIndex];
 
+    final isFavorite = ref
+        .watch(favoriteProvider)
+        .savedMusic
+        .containsKey(musicUtil.id.toString());
+
     return PopScope(
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
@@ -45,6 +50,7 @@ class MusicScreen extends ConsumerWidget {
             icon: const Icon(Icons.arrow_back),
             onPressed: () async {
               await ref.read(musicProvider.notifier).stopAndDispose();
+              if (!context.mounted) return;
               context.pop();
             },
           ),
@@ -107,8 +113,15 @@ class MusicScreen extends ConsumerWidget {
                           ],
                         ),
                         IconButton(
-                          onPressed: () {},
-                          icon: const Icon(Icons.favorite_border),
+                          onPressed: () async {
+                            await ref
+                                .read(favoriteProvider.notifier)
+                                .saveMusic(musicUtil);
+                          },
+                          icon: Icon(
+                            isFavorite ? Icons.favorite : Icons.favorite_border,
+                            size: 30,
+                          ),
                           color: Colors.white,
                         ),
                       ],

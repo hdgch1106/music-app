@@ -13,12 +13,13 @@ class MusicsHorizontal extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Especial para ti",
+        SlideInText(
+          text: "Especial para ti",
           style: getSubtitleStyle().copyWith(fontWeight: FontWeight.bold),
+          duration: const Duration(milliseconds: 2000),
         ),
         SizedBox(height: size.height * 0.02),
-        SizedBox(
+        /* SizedBox(
           height: size.height * 0.26,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
@@ -31,6 +32,15 @@ class MusicsHorizontal extends StatelessWidget {
               );
             },
           ),
+        ), */
+        SlidingListHorizontal(
+          children: musicSpecial.map((musicUtil) {
+            return _CustomMusicCard(
+              size: size,
+              musicUtil: musicUtil,
+              index: musicSpecial.indexOf(musicUtil),
+            );
+          }).toList(),
         ),
       ],
     );
@@ -50,6 +60,10 @@ class _CustomMusicCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isFavorite = ref
+        .watch(favoriteProvider)
+        .savedMusic
+        .containsKey(musicUtil.id.toString());
     return Padding(
       padding: EdgeInsets.only(right: size.width * 0.03),
       child: SizedBox(
@@ -117,8 +131,14 @@ class _CustomMusicCard extends ConsumerWidget {
                       ],
                     ),
                     IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.favorite_border),
+                      onPressed: () async {
+                        await ref
+                            .read(favoriteProvider.notifier)
+                            .saveMusic(musicUtil);
+                      },
+                      icon: Icon(
+                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                      ),
                       color: Colors.white,
                     ),
                   ],
