@@ -1,3 +1,15 @@
-# music_app
+# Aplicación Móvil Música con Flutter
+Aplicación móvil de música que consume assets locales para reproducirlos.
 
-A new Flutter project.
+## Funciones
+- Lista de favoritos
+- Reproducción de música
+- Modo aleatorio
+- Modo repetición
+## Tecnologías
+- Flutter
+- Riverpod
+- Audioplayers
+- GoRouter
+- GetIt
+- SharedPreferences
