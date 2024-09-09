@@ -1,4 +1,5 @@
-import 'dart:developer';
+import 'dart:developer' as dev;
+import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,7 +43,7 @@ class MusicNotifier extends StateNotifier<MusicState> {
         await state.audioPlayer!.dispose();
       } catch (e) {
         // Handle exception
-        log('Exception in stopAndDispose: $e');
+        dev.log('Exception in stopAndDispose: $e');
       }
 
       _isDisposed = true;
@@ -98,10 +99,33 @@ class MusicNotifier extends StateNotifier<MusicState> {
   }
 
   onPlayNext() {
-    if (state.currentSongIndex < state.playlist.length - 1) {
-      state = state.copyWith(currentSongIndex: state.currentSongIndex + 1);
+    if (state.isShuffle) {
+      if (state.playlist.isNotEmpty) {
+        if (state.playlist.length == 1) {
+          state = state.copyWith(currentSongIndex: 0);
+        } else {
+          int nextIndex;
+          do {
+            nextIndex = Random().nextInt(state.playlist.length);
+          } while (nextIndex == state.currentSongIndex);
+          state = state.copyWith(currentSongIndex: nextIndex);
+        }
+      }
     } else {
-      state = state.copyWith(currentSongIndex: 0);
+      if (state.currentSongIndex < state.playlist.length - 1 &&
+          state.repeatMode != RepeatMode.repeatOne) {
+        // Reproducir la siguiente canción si no estás al final de la lista y no en modo repeatOne
+        state = state.copyWith(currentSongIndex: state.currentSongIndex + 1);
+      } else if (state.currentSongIndex >= state.playlist.length - 1) {
+        // Manejar el final de la lista
+        if (state.repeatMode == RepeatMode.repeatAll) {
+          // Repetir todas las canciones
+          state = state.copyWith(currentSongIndex: 0);
+        } else if (state.repeatMode == RepeatMode.repeatOne) {
+          // Repetir la misma canción: No cambiar el índice de la canción actual
+          state = state.copyWith(currentSongIndex: state.currentSongIndex);
+        }
+      }
     }
     onPlay();
   }
@@ -125,7 +149,31 @@ class MusicNotifier extends StateNotifier<MusicState> {
 
     state = state.copyWith(isPlaying: true);
   }
+
+  void toggleShuffle() {
+    state = state.copyWith(isShuffle: !state.isShuffle);
+  }
+
+  void toggleRepeat() {
+    RepeatMode nextMode;
+
+    switch (state.repeatMode) {
+      case RepeatMode.none:
+        nextMode = RepeatMode.repeatAll;
+        break;
+      case RepeatMode.repeatAll:
+        nextMode = RepeatMode.repeatOne;
+        break;
+      case RepeatMode.repeatOne:
+        nextMode = RepeatMode.none;
+        break;
+    }
+
+    state = state.copyWith(repeatMode: nextMode);
+  }
 }
+
+enum RepeatMode { none, repeatAll, repeatOne }
 
 class MusicState {
   final List<MusicUtil> playlist;
@@ -134,6 +182,9 @@ class MusicState {
   final Duration currentDuration;
   final Duration totalDuration;
   final bool isPlaying;
+  final bool isShuffle;
+  final bool isRepeat;
+  final RepeatMode repeatMode;
   MusicState({
     this.playlist = const [],
     this.currentSongIndex = 0,
@@ -141,6 +192,9 @@ class MusicState {
     this.currentDuration = Duration.zero,
     this.totalDuration = Duration.zero,
     this.isPlaying = false,
+    this.isShuffle = false,
+    this.isRepeat = false,
+    this.repeatMode = RepeatMode.none,
   });
 
   MusicState copyWith({
@@ -150,6 +204,9 @@ class MusicState {
     Duration? currentDuration,
     Duration? totalDuration,
     bool? isPlaying,
+    bool? isShuffle,
+    bool? isRepeat,
+    RepeatMode? repeatMode,
   }) =>
       MusicState(
         playlist: playlist ?? this.playlist,
@@ -158,5 +215,8 @@ class MusicState {
         currentDuration: currentDuration ?? this.currentDuration,
         totalDuration: totalDuration ?? this.totalDuration,
         isPlaying: isPlaying ?? this.isPlaying,
+        isShuffle: isShuffle ?? this.isShuffle,
+        isRepeat: isRepeat ?? this.isRepeat,
+        repeatMode: repeatMode ?? this.repeatMode,
       );
 }

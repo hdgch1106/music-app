@@ -29,7 +29,7 @@ class MusicScreen extends ConsumerWidget {
         .containsKey(musicUtil.id.toString());
 
     return PopScope(
-      onPopInvokedWithResult: (didPop, result) {
+      onPopInvoked: (didPop) {
         if (didPop) {
           ref.read(musicProvider.notifier).stopAndDispose();
         }
@@ -208,27 +208,55 @@ class MusicScreen extends ConsumerWidget {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.format_list_bulleted),
-                          onPressed: () {},
+                          onPressed: () {
+                            showModalBottomSheet(
+                              context: context,
+                              builder: (context) {
+                                final playlist = musicPv.playlist;
+                                return ListView.builder(
+                                  itemCount: playlist.length,
+                                  itemBuilder: (context, index) {
+                                    return ListTile(
+                                      title: Text(playlist[index].name),
+                                      onTap: () {
+                                        ref
+                                            .read(musicProvider.notifier)
+                                            .setCurrentSongIndex(index);
+                                        Navigator.pop(context);
+                                      },
+                                    );
+                                  },
+                                );
+                              },
+                            );
+                          },
                           iconSize: 20,
                           color: Colors.grey,
                         ),
                         IconButton(
-                          icon: const Icon(Icons.repeat),
-                          onPressed: () {},
+                          icon: Icon(
+                            musicPv.repeatMode == RepeatMode.none
+                                ? Icons.repeat
+                                : (musicPv.repeatMode == RepeatMode.repeatAll
+                                    ? Icons.repeat
+                                    : Icons.repeat_one),
+                          ),
+                          onPressed: () {
+                            ref.read(musicProvider.notifier).toggleRepeat();
+                          },
                           iconSize: 20,
-                          color: Colors.grey,
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.repeat_one),
-                          onPressed: () {},
-                          iconSize: 20,
-                          color: Colors.grey,
+                          color: musicPv.repeatMode != RepeatMode.none
+                              ? Colors.orange
+                              : Colors.grey,
                         ),
                         IconButton(
                           icon: const Icon(Icons.shuffle),
-                          onPressed: () {},
+                          onPressed: () {
+                            ref.read(musicProvider.notifier).toggleShuffle();
+                          },
                           iconSize: 20,
-                          color: Colors.grey,
+                          color:
+                              musicPv.isShuffle ? Colors.orange : Colors.grey,
                         ),
                       ],
                     ),
