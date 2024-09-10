@@ -50,15 +50,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           onPressed: () {
                             context.pop();
                           },
-                          child: const Text('Aceptar'),
+                          child: const Text('Aceptar',
+                              style: TextStyle(color: Colors.white)),
                         ),
                       ],
                     );
                   },
                 );
+              } else {
+                ref
+                    .read(userProvider.notifier)
+                    .setFullName(_nameController.text);
+                context.pop();
               }
-              ref.read(userProvider.notifier).setFullName(_nameController.text);
-              context.pop();
             },
             child: Text(
               'Guardar',
