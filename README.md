@@ -11,7 +11,7 @@ Aplicación móvil de música que consume assets locales para reproducirlos.
 ## Tecnologías
 - Flutter
 - Riverpod
-- Audioplayers
+- JustAudio
 - GoRouter
 - GetIt
 - SharedPreferences
