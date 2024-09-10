@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:music_app/core/core.dart';
+import 'package:music_app/features/account/presentation/presentation.dart';
 
-class TopTitle extends StatelessWidget {
+class TopTitle extends ConsumerWidget {
   const TopTitle({super.key});
 
   String getGreeting() {
@@ -17,8 +19,9 @@ class TopTitle extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final userPv = ref.watch(userProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -27,9 +30,10 @@ class TopTitle extends StatelessWidget {
           style: getHeaderStyle(),
         ),
         SlideInText(
-          text: "Hugo",
+          text: userPv.fullName,
           style: getHeaderStyle().copyWith(
             color: theme.colorScheme.secondary,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
