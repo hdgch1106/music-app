@@ -85,10 +85,11 @@ class _CustomMusicCard extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 GestureDetector(
-                  onTap: () {
-                    ref
+                  onTap: () async {
+                    await ref
                         .read(musicProvider.notifier)
                         .setPlaylist(musicLofi, index);
+                    if (!context.mounted) return;
                     context.push("/music", extra: musicUtil);
                   },
                   child: Stack(

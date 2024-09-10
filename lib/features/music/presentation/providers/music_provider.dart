@@ -1,7 +1,6 @@
-import 'dart:developer' as dev;
-import 'dart:math';
+import 'dart:async';
 
-import 'package:audioplayers/audioplayers.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:music_app/core/core.dart';
 
@@ -11,79 +10,134 @@ final musicProvider = StateNotifierProvider<MusicNotifier, MusicState>((ref) {
 
 class MusicNotifier extends StateNotifier<MusicState> {
   bool _isDisposed = false;
-  MusicNotifier() : super(MusicState());
+  late AudioPlayer _audioPlayer;
 
-  _listenToDuration() {
-    state = state.copyWith(
-      audioPlayer: AudioPlayer(),
-    );
-    //Listen for total duration
-    state.audioPlayer!.onDurationChanged.listen((duration) {
-      state = state.copyWith(totalDuration: duration);
+  StreamSubscription? _positionSubscription;
+  StreamSubscription? _durationSubscription;
+  StreamSubscription? _playerStateSubscription;
+  StreamSubscription? _currentIndexSubscription;
+
+  MusicNotifier() : super(MusicState()) {
+    _audioPlayer = AudioPlayer();
+  }
+
+  AudioPlayer get audioPlayer => _audioPlayer;
+
+  void _listenToDuration() {
+    _positionSubscription = _audioPlayer.positionStream.listen((position) {
+      if (!_isDisposed) {
+        state = state.copyWith(currentDuration: position);
+      }
     });
-    //Listen for current duration
-    state.audioPlayer!.onPositionChanged.listen((duration) {
-      state = state.copyWith(currentDuration: duration);
+
+    _durationSubscription = _audioPlayer.durationStream.listen((duration) {
+      if (!_isDisposed) {
+        state = state.copyWith(totalDuration: duration ?? Duration.zero);
+      }
     });
-    //Listen for song completion
-    state.audioPlayer!.onPlayerComplete.listen((event) {
-      onPlayNext();
+
+    _playerStateSubscription =
+        _audioPlayer.playerStateStream.listen((playerState) {
+      if (!_isDisposed) {
+        if (playerState.processingState == ProcessingState.completed) {
+          onPlayNext();
+        }
+
+        // Actualiza el estado de reproducción
+        if (playerState.playing) {
+          state = state.copyWith(isPlaying: true);
+        } else if (!playerState.playing &&
+            playerState.processingState != ProcessingState.loading) {
+          state = state.copyWith(isPlaying: false);
+        }
+
+        // Actualiza el índice de la canción actual
+        _updateCurrentSongIndex();
+      }
+    });
+  }
+
+  void _listenToIndex() {
+    _currentIndexSubscription = _audioPlayer.currentIndexStream.listen((index) {
+      if (!_isDisposed && index != null && index != state.currentSongIndex) {
+        state = state.copyWith(currentSongIndex: index);
+        print('Current index updated: $index');
+      }
     });
   }
 
   Future<void> stopAndDispose() async {
     if (_isDisposed) return;
 
-    if (state.audioPlayer != null) {
-      try {
-        if (state.isPlaying) {
-          await state.audioPlayer!.stop();
-        }
+    // Cancela las suscripciones de los streams
+    await _positionSubscription?.cancel();
+    await _durationSubscription?.cancel();
+    await _playerStateSubscription?.cancel();
+    await _currentIndexSubscription?.cancel();
 
-        await state.audioPlayer!.dispose();
-      } catch (e) {
-        // Handle exception
-        dev.log('Exception in stopAndDispose: $e');
-      }
+    _positionSubscription = null;
+    _durationSubscription = null;
+    _playerStateSubscription = null;
+    _currentIndexSubscription = null;
 
-      _isDisposed = true;
-    }
-
-    state = state.copyWith(audioPlayer: null, isPlaying: false);
+    await _audioPlayer.dispose();
+    _isDisposed = true;
   }
 
-  setPlaylist(List<MusicUtil> playlist, int index) {
-    _isDisposed = false;
+  Future<void> setPlaylist(List<MusicUtil> playlist, int index) async {
+    if (!_isDisposed) {
+      await stopAndDispose(); // Asegúrate de que la instancia anterior se detenga
+    }
+
+    _audioPlayer = AudioPlayer(); // Crea una nueva instancia
     _listenToDuration();
+    _listenToIndex();
+    _isDisposed = false;
+
+    List<AudioSource> audioSources = playlist.map((music) {
+      // Asegúrate de que music.musicPath tenga la ruta correcta relativa
+      final uri = Uri.parse('asset://${music.musicPath}');
+      return AudioSource.uri(uri);
+    }).toList();
+
+    final playlistSource = ConcatenatingAudioSource(children: audioSources);
+    await _audioPlayer.setAudioSource(playlistSource, initialIndex: index);
+
     state = state.copyWith(
       playlist: playlist,
       currentSongIndex: index,
     );
-    setCurrentSongIndex(index);
+    print(state);
+    onPlay();
   }
 
-  setCurrentSongIndex(int? index) {
-    state = state.copyWith(currentSongIndex: index);
-    if (index != null) {
+  void setCurrentSongIndex(int index) {
+    if (index >= 0 && index < state.playlist.length) {
+      audioPlayer.seek(Duration.zero, index: index);
+      state = state.copyWith(currentSongIndex: index);
       onPlay();
     }
   }
 
-  onPlay() async {
-    final String path = state.playlist[state.currentSongIndex].musicPath;
-    await state.audioPlayer!.stop();
-    await state.audioPlayer!.play(AssetSource(path));
-    state = state.copyWith(isPlaying: true);
+  Future<void> onPlay() async {
+    if (!state.isPlaying) {
+      await _audioPlayer.play();
+      state = state.copyWith(isPlaying: true);
+    }
   }
 
-  onPause() async {
-    await state.audioPlayer!.pause();
-    state = state.copyWith(isPlaying: false);
+  Future<void> onPause() async {
+    if (state.isPlaying) {
+      await _audioPlayer.pause();
+      state = state.copyWith(isPlaying: false);
+    }
   }
 
-  onResume() async {
-    await state.audioPlayer!.resume();
-    state = state.copyWith(isPlaying: true);
+  Future<void> onResume() async {
+    if (!state.isPlaying) {
+      await _audioPlayer.play();
+      state = state.copyWith(isPlaying: true);
+    }
   }
 
   onPauseOrResume() {
@@ -94,129 +148,94 @@ class MusicNotifier extends StateNotifier<MusicState> {
     }
   }
 
-  onSeek(Duration position) async {
-    await state.audioPlayer!.seek(position);
-  }
-
-  onPlayNext() {
+  void onPlayNext() async {
     if (state.isShuffle) {
-      if (state.playlist.isNotEmpty) {
-        if (state.playlist.length == 1) {
-          state = state.copyWith(currentSongIndex: 0);
-        } else {
-          int nextIndex;
-          do {
-            nextIndex = Random().nextInt(state.playlist.length);
-          } while (nextIndex == state.currentSongIndex);
-          state = state.copyWith(currentSongIndex: nextIndex);
-        }
-      }
+      await _audioPlayer.seekToNext();
     } else {
-      if (state.currentSongIndex < state.playlist.length - 1 &&
-          state.repeatMode != RepeatMode.repeatOne) {
-        // Reproducir la siguiente canción si no estás al final de la lista y no en modo repeatOne
-        state = state.copyWith(currentSongIndex: state.currentSongIndex + 1);
-      } else if (state.currentSongIndex >= state.playlist.length - 1) {
-        // Manejar el final de la lista
-        if (state.repeatMode == RepeatMode.repeatAll) {
-          // Repetir todas las canciones
-          state = state.copyWith(currentSongIndex: 0);
-        } else if (state.repeatMode == RepeatMode.repeatOne) {
-          // Repetir la misma canción: No cambiar el índice de la canción actual
-          state = state.copyWith(currentSongIndex: state.currentSongIndex);
-        }
+      if (state.repeatMode == LoopMode.one) {
+        await _audioPlayer.seek(Duration.zero);
+      } else {
+        final nextIndex = (state.currentSongIndex + 1) % state.playlist.length;
+        await _audioPlayer.seek(Duration.zero, index: nextIndex);
+        state = state.copyWith(currentSongIndex: nextIndex);
       }
     }
     onPlay();
   }
 
-  onPlayPrevious() async {
-    if (state.currentDuration.inSeconds > 2) {
-      await onSeek(Duration.zero);
-    } else {
-      await state.audioPlayer!.stop();
-
-      if (state.currentSongIndex > 0) {
-        state = state.copyWith(currentSongIndex: state.currentSongIndex - 1);
-      } else {
-        state = state.copyWith(currentSongIndex: state.playlist.length - 1);
-      }
-
-      final String path = state.playlist[state.currentSongIndex].musicPath;
-
-      await state.audioPlayer!.play(AssetSource(path));
-    }
-
-    state = state.copyWith(isPlaying: true);
+  Future<void> onPlayPrevious() async {
+    final previousIndex = (state.currentSongIndex - 1 + state.playlist.length) %
+        state.playlist.length;
+    await _audioPlayer.seek(Duration.zero, index: previousIndex);
+    state = state.copyWith(currentSongIndex: previousIndex);
+    onPlay();
   }
 
+  // Método para alternar el modo aleatorio
   void toggleShuffle() {
-    state = state.copyWith(isShuffle: !state.isShuffle);
+    bool isShuffling = !state.isShuffle;
+    _audioPlayer.setShuffleModeEnabled(isShuffling);
+    state = state.copyWith(isShuffle: isShuffling);
+    print('Shuffle mode is now: $isShuffling');
   }
 
-  void toggleRepeat() {
-    RepeatMode nextMode;
-
-    switch (state.repeatMode) {
-      case RepeatMode.none:
-        nextMode = RepeatMode.repeatAll;
-        break;
-      case RepeatMode.repeatAll:
-        nextMode = RepeatMode.repeatOne;
-        break;
-      case RepeatMode.repeatOne:
-        nextMode = RepeatMode.none;
-        break;
+  // Método para alternar entre modos de repetición
+  void toggleRepeatMode() async {
+    LoopMode nextMode;
+    if (state.repeatMode == LoopMode.off) {
+      nextMode = LoopMode.all;
+    } else if (state.repeatMode == LoopMode.all) {
+      nextMode = LoopMode.one;
+    } else {
+      nextMode = LoopMode.off;
     }
-
+    await _audioPlayer.setLoopMode(nextMode);
     state = state.copyWith(repeatMode: nextMode);
   }
-}
 
-enum RepeatMode { none, repeatAll, repeatOne }
+  void _updateCurrentSongIndex() {
+    final currentIndex = _audioPlayer.currentIndex ?? state.currentSongIndex;
+    if (currentIndex != state.currentSongIndex) {
+      state = state.copyWith(currentSongIndex: currentIndex);
+      print('Current index updated: $currentIndex');
+    }
+  }
+}
 
 class MusicState {
   final List<MusicUtil> playlist;
   final int currentSongIndex;
-  final AudioPlayer? audioPlayer;
   final Duration currentDuration;
   final Duration totalDuration;
   final bool isPlaying;
   final bool isShuffle;
-  final bool isRepeat;
-  final RepeatMode repeatMode;
+  final LoopMode repeatMode;
   MusicState({
     this.playlist = const [],
     this.currentSongIndex = 0,
-    this.audioPlayer,
     this.currentDuration = Duration.zero,
     this.totalDuration = Duration.zero,
     this.isPlaying = false,
     this.isShuffle = false,
-    this.isRepeat = false,
-    this.repeatMode = RepeatMode.none,
+    this.repeatMode = LoopMode.off,
   });
 
   MusicState copyWith({
     List<MusicUtil>? playlist,
     int? currentSongIndex,
-    AudioPlayer? audioPlayer,
     Duration? currentDuration,
     Duration? totalDuration,
     bool? isPlaying,
     bool? isShuffle,
-    bool? isRepeat,
-    RepeatMode? repeatMode,
+    LoopMode? repeatMode,
   }) =>
       MusicState(
         playlist: playlist ?? this.playlist,
         currentSongIndex: currentSongIndex ?? this.currentSongIndex,
-        audioPlayer: audioPlayer ?? this.audioPlayer,
         currentDuration: currentDuration ?? this.currentDuration,
         totalDuration: totalDuration ?? this.totalDuration,
         isPlaying: isPlaying ?? this.isPlaying,
         isShuffle: isShuffle ?? this.isShuffle,
-        isRepeat: isRepeat ?? this.isRepeat,
         repeatMode: repeatMode ?? this.repeatMode,
       );
 }

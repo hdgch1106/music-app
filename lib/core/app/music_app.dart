@@ -11,7 +11,7 @@ class MusicApp extends ConsumerWidget {
     //final themePv = ref.watch(themeProvider);
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      title: "SSGG SSAYS",
+      title: "Music App",
       theme: AppTheme().getDarkTheme(),
       //theme: themePv ? AppTheme().getDarkTheme() : AppTheme().getLightTheme(),
       routerConfig: appRouter,

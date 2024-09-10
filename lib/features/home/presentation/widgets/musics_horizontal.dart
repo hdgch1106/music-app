@@ -79,10 +79,11 @@ class _CustomMusicCard extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 GestureDetector(
-                  onTap: () {
-                    ref
+                  onTap: () async {
+                    await ref
                         .read(musicProvider.notifier)
                         .setPlaylist(musicSpecial, index);
+                    if (!context.mounted) return;
                     context.push("/music", extra: musicUtil);
                   },
                   child: Stack(

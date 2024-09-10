@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:music_app/core/core.dart';
-import 'package:music_app/core/router/app_router.dart';
 import 'package:music_app/features/account/presentation/presentation.dart';
 
 class AccountView extends ConsumerWidget {

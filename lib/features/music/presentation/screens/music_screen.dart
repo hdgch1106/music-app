@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:music_app/core/core.dart';
 import 'package:music_app/features/music/presentation/presentation.dart';
 
@@ -143,12 +144,8 @@ class MusicScreen extends ConsumerWidget {
                         onChanged: (value) {
                           ref
                               .read(musicProvider.notifier)
-                              .onSeek(Duration(seconds: value.toInt()));
-                        },
-                        onChangeEnd: (value) {
-                          ref
-                              .read(musicProvider.notifier)
-                              .onSeek(Duration(seconds: value.toInt()));
+                              .audioPlayer
+                              .seek(Duration(seconds: value.toInt()));
                         },
                       ),
                     ),
@@ -235,17 +232,29 @@ class MusicScreen extends ConsumerWidget {
                         ),
                         IconButton(
                           icon: Icon(
-                            musicPv.repeatMode == RepeatMode.none
+                            ref
+                                        .read(musicProvider.notifier)
+                                        .audioPlayer
+                                        .loopMode ==
+                                    LoopMode.off
                                 ? Icons.repeat
-                                : (musicPv.repeatMode == RepeatMode.repeatAll
+                                : (ref
+                                            .read(musicProvider.notifier)
+                                            .audioPlayer
+                                            .loopMode ==
+                                        LoopMode.all
                                     ? Icons.repeat
                                     : Icons.repeat_one),
                           ),
                           onPressed: () {
-                            ref.read(musicProvider.notifier).toggleRepeat();
+                            ref.read(musicProvider.notifier).toggleRepeatMode();
                           },
                           iconSize: 20,
-                          color: musicPv.repeatMode != RepeatMode.none
+                          color: ref
+                                      .read(musicProvider.notifier)
+                                      .audioPlayer
+                                      .loopMode !=
+                                  LoopMode.off
                               ? Colors.orange
                               : Colors.grey,
                         ),
