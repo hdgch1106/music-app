@@ -1,10 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:music_app/core/core.dart';
+import 'package:music_app/features/music/presentation/presentation.dart';
 
 final favoriteProvider =
     StateNotifierProvider<FavoriteNotifier, FavoriteState>((ref) {
   return FavoriteNotifier(
     keyValueStorageService: DIServices.keyValueStorageService,
+    ref: ref,
   );
 });
 
@@ -13,8 +15,10 @@ const String namePrefix = "name_";
 
 class FavoriteNotifier extends StateNotifier<FavoriteState> {
   final KeyValueStorageService keyValueStorageService;
+  final Ref ref;
   FavoriteNotifier({
     required this.keyValueStorageService,
+    required this.ref,
   }) : super(FavoriteState()) {
     _init();
   }
@@ -45,7 +49,7 @@ class FavoriteNotifier extends StateNotifier<FavoriteState> {
   String _extractMusicId(String key) => key.replaceAll(musicFavoritePrefix, '');
 
   MusicUtil? findMusicById(int id) {
-    List<MusicUtil> allMusic = [...musicSpecial, ...musicLofi];
+    List<MusicUtil> allMusic = ref.read(musicFolderProvider).playlist;
 
     try {
       return allMusic.firstWhere((music) => music.id == id);

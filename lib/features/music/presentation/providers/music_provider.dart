@@ -97,7 +97,8 @@ class MusicNotifier extends StateNotifier<MusicState> {
     _isDisposed = false;
 
     List<AudioSource> audioSources = playlist.map((music) {
-      final uri = Uri.parse('asset://${music.musicPath}');
+      //final uri = Uri.parse('asset://${music.musicPath}');
+      final uri = Uri.file(music.musicPath);
       return AudioSource.uri(
         uri,
         tag: MediaItem(

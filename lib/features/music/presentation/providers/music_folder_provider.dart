@@ -57,17 +57,20 @@ class MusicFolderNotifier extends StateNotifier<MusicFolderState> {
       }
     }
 
-    // Mezcla la lista de canciones para obtener una selección aleatoria
-    playlist.shuffle(Random());
-
-    // Selecciona las primeras 10 canciones (si hay al menos 10)
+    // Mezcla la lista de canciones para obtener una selección aleatoria solo para la specialPlaylist
     List<MusicUtil> specialPlaylist =
-        playlist.length > 10 ? playlist.sublist(0, 10) : playlist;
+        List.from(playlist); // Crea una copia de la playlist
+    specialPlaylist.shuffle(Random()); // Mezcla la copia
+
+    // Selecciona las primeras 10 canciones (si hay al menos 10) de la specialPlaylist
+    specialPlaylist = specialPlaylist.length > 10
+        ? specialPlaylist.sublist(0, 10)
+        : specialPlaylist;
 
     // Actualiza el estado con la playlist completa y la specialPlaylist
     state = state.copyWith(
-      playlist: playlist,
-      specialPlaylist: specialPlaylist,
+      playlist: playlist, // La playlist general permanece sin mezclar
+      specialPlaylist: specialPlaylist, // La specialPlaylist es aleatoria
     );
   }
 

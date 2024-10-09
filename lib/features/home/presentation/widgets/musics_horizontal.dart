@@ -120,20 +120,24 @@ class _CustomMusicCard extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          musicUtil.name,
-                          style: getSubtitleStyle(),
-                        ),
-                        Text(
-                          musicUtil.description,
-                          style: getSmallSubtitleStyle().copyWith(
-                            color: Colors.grey,
+                    SizedBox(
+                      width: size.width * 0.6,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            musicUtil.name,
+                            style: getSubtitleStyle(),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                          Text(
+                            musicUtil.description,
+                            style: getSmallSubtitleStyle().copyWith(
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     IconButton(
                       onPressed: () async {

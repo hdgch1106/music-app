@@ -4,18 +4,19 @@ import 'package:go_router/go_router.dart';
 import 'package:music_app/core/core.dart';
 import 'package:music_app/features/music/presentation/presentation.dart';
 
-class MusicsVertical extends StatelessWidget {
+class MusicsVertical extends ConsumerWidget {
   const MusicsVertical({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final size = MediaQuery.of(context).size;
+    final musicFolderPv = ref.watch(musicFolderProvider);
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SlideInText(
-            text: "Musica Lo-fi",
+            text: "Musica General",
             style: getSubtitleStyle().copyWith(fontWeight: FontWeight.bold),
             duration: const Duration(milliseconds: 2000),
           ),
@@ -23,10 +24,11 @@ class MusicsVertical extends StatelessWidget {
           Expanded(
             child: SlidingListVertical(
               children: List.generate(
-                musicLofi.length,
+                musicFolderPv.playlist.length,
                 (index) => _CustomMusicCard(
+                  playlist: musicFolderPv.playlist,
                   size: size,
-                  musicUtil: musicLofi[index],
+                  musicUtil: musicFolderPv.playlist[index],
                   index: index,
                 ),
               ),
@@ -54,11 +56,13 @@ class MusicsVertical extends StatelessWidget {
 
 class _CustomMusicCard extends ConsumerWidget {
   const _CustomMusicCard({
+    required this.playlist,
     required this.size,
     required this.musicUtil,
     required this.index,
   });
 
+  final List<MusicUtil> playlist;
   final MusicUtil musicUtil;
   final Size size;
   final int index;
@@ -88,7 +92,7 @@ class _CustomMusicCard extends ConsumerWidget {
                   onTap: () async {
                     await ref
                         .read(musicProvider.notifier)
-                        .setPlaylist(musicLofi, index);
+                        .setPlaylist(playlist, index);
                     if (!context.mounted) return;
                     context.push("/music", extra: musicUtil);
                   },
@@ -119,20 +123,25 @@ class _CustomMusicCard extends ConsumerWidget {
                   ),
                 ),
                 SizedBox(width: size.width * 0.03),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      musicUtil.name,
-                      style: getSubtitleStyle(),
-                    ),
-                    Text(
-                      musicUtil.description,
-                      style: getSmallSubtitleStyle().copyWith(
-                        color: Colors.grey,
+                SizedBox(
+                  width: size.width * 0.4,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        musicUtil.name,
+                        style: getSubtitleStyle(),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
                       ),
-                    ),
-                  ],
+                      Text(
+                        musicUtil.description,
+                        style: getSmallSubtitleStyle().copyWith(
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const Spacer(),
                 IconButton(
