@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:music_app/core/core.dart';
 import 'package:music_app/features/account/presentation/presentation.dart';
+import 'package:music_app/features/music/presentation/presentation.dart';
 
 class AccountView extends ConsumerWidget {
   const AccountView({super.key});
@@ -102,6 +103,29 @@ class AccountView extends ConsumerWidget {
                   ),
                   child: Text(
                     'Editar',
+                    style: getSubtitleStyle().copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                SizedBox(width: size.width * 0.02),
+                TextButton(
+                  onPressed: () =>
+                      ref.read(musicFolderProvider.notifier).setMusicFolder(),
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    side: const BorderSide(
+                      color: Colors.grey,
+                      width: 1,
+                    ),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: size.width * 0.05,
+                      vertical: size.height * 0.01,
+                    ),
+                  ),
+                  child: Text(
+                    'Seleccionar carpeta',
                     style: getSubtitleStyle().copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,

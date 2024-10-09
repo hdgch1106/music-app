@@ -98,20 +98,25 @@ class MusicScreen extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              musicUtil.name,
-                              style: getTitleStyle(),
-                            ),
-                            Text(
-                              musicUtil.description,
-                              style: getSubtitleStyle().copyWith(
-                                color: Colors.grey,
+                        SizedBox(
+                          width: size.width * 0.75,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                musicUtil.name,
+                                style: getTitleStyle(),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
-                            ),
-                          ],
+                              Text(
+                                musicUtil.description,
+                                style: getSubtitleStyle().copyWith(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                         IconButton(
                           onPressed: () async {

@@ -4,12 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:music_app/core/core.dart';
 import 'package:music_app/features/music/presentation/presentation.dart';
 
-class MusicsHorizontal extends StatelessWidget {
+class MusicsHorizontal extends ConsumerWidget {
   const MusicsHorizontal({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final size = MediaQuery.of(context).size;
+    final musicFolderPv = ref.watch(musicFolderProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -34,11 +35,12 @@ class MusicsHorizontal extends StatelessWidget {
           ),
         ), */
         SlidingListHorizontal(
-          children: musicSpecial.map((musicUtil) {
+          children: musicFolderPv.specialPlaylist.map((musicUtil) {
             return _CustomMusicCard(
+              playlist: musicFolderPv.specialPlaylist,
               size: size,
               musicUtil: musicUtil,
-              index: musicSpecial.indexOf(musicUtil),
+              index: musicFolderPv.specialPlaylist.indexOf(musicUtil),
             );
           }).toList(),
         ),
@@ -49,11 +51,13 @@ class MusicsHorizontal extends StatelessWidget {
 
 class _CustomMusicCard extends ConsumerWidget {
   const _CustomMusicCard({
+    required this.playlist,
     required this.size,
     required this.musicUtil,
     required this.index,
   });
 
+  final List<MusicUtil> playlist;
   final MusicUtil musicUtil;
   final Size size;
   final int index;
@@ -82,7 +86,7 @@ class _CustomMusicCard extends ConsumerWidget {
                   onTap: () async {
                     await ref
                         .read(musicProvider.notifier)
-                        .setPlaylist(musicSpecial, index);
+                        .setPlaylist(playlist, index);
                     if (!context.mounted) return;
                     context.push("/music", extra: musicUtil);
                   },

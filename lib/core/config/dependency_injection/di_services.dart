@@ -5,6 +5,9 @@ void injectServices() {
   GetIt.I.registerLazySingleton<KeyValueStorageService>(
     () => KeyValueStorageServiceImpl(),
   );
+  GetIt.I.registerLazySingleton<FilePickerService>(
+    () => FilePickerServiceImpl(),
+  );
 }
 
 class DIServices {
@@ -12,4 +15,6 @@ class DIServices {
 
   static KeyValueStorageService get keyValueStorageService =>
       GetIt.I.get<KeyValueStorageService>();
+  static FilePickerService get filePickerService =>
+      GetIt.I.get<FilePickerService>();
 }

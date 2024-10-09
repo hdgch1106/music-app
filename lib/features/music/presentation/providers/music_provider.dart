@@ -96,7 +96,8 @@ class MusicNotifier extends StateNotifier<MusicState> {
 
     List<AudioSource> audioSources = playlist.map((music) {
       // Asegúrate de que music.musicPath tenga la ruta correcta relativa
-      final uri = Uri.parse('asset://${music.musicPath}');
+      //final uri = Uri.parse('asset://${music.musicPath}');
+      final uri = Uri.file(music.musicPath);
       return AudioSource.uri(uri);
     }).toList();
 
@@ -107,7 +108,6 @@ class MusicNotifier extends StateNotifier<MusicState> {
       playlist: playlist,
       currentSongIndex: index,
     );
-    print(state);
     onPlay();
   }
 
