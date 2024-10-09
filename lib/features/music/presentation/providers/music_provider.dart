@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:music_app/core/core.dart';
 
 final musicProvider = StateNotifierProvider<MusicNotifier, MusicState>((ref) {
@@ -61,7 +63,7 @@ class MusicNotifier extends StateNotifier<MusicState> {
     _currentIndexSubscription = _audioPlayer.currentIndexStream.listen((index) {
       if (!_isDisposed && index != null && index != state.currentSongIndex) {
         state = state.copyWith(currentSongIndex: index);
-        print('Current index updated: $index');
+        //print('Current index updated: $index');
       }
     });
   }
@@ -86,19 +88,27 @@ class MusicNotifier extends StateNotifier<MusicState> {
 
   Future<void> setPlaylist(List<MusicUtil> playlist, int index) async {
     if (!_isDisposed) {
-      await stopAndDispose(); // Asegúrate de que la instancia anterior se detenga
+      await stopAndDispose();
     }
 
-    _audioPlayer = AudioPlayer(); // Crea una nueva instancia
+    _audioPlayer = AudioPlayer();
     _listenToDuration();
     _listenToIndex();
     _isDisposed = false;
 
     List<AudioSource> audioSources = playlist.map((music) {
-      // Asegúrate de que music.musicPath tenga la ruta correcta relativa
-      //final uri = Uri.parse('asset://${music.musicPath}');
-      final uri = Uri.file(music.musicPath);
-      return AudioSource.uri(uri);
+      final uri = Uri.parse('asset://${music.musicPath}');
+      return AudioSource.uri(
+        uri,
+        tag: MediaItem(
+          id: music.id.toString(),
+          album: music.description,
+          title: music.name,
+          artUri: Uri.parse(
+            'https://png.pngtree.com/background/20210715/original/pngtree-electronic-music-album-picture-image_1301130.jpg',
+          ),
+        ),
+      );
     }).toList();
 
     final playlistSource = ConcatenatingAudioSource(children: audioSources);
@@ -108,6 +118,7 @@ class MusicNotifier extends StateNotifier<MusicState> {
       playlist: playlist,
       currentSongIndex: index,
     );
+    //print(state);
     onPlay();
   }
 
@@ -150,7 +161,26 @@ class MusicNotifier extends StateNotifier<MusicState> {
 
   void onPlayNext() async {
     if (state.isShuffle) {
-      await _audioPlayer.seekToNext();
+      if (!_audioPlayer.shuffleModeEnabled) {
+        await _audioPlayer.setShuffleModeEnabled(true);
+      }
+
+      final shuffleIndices = _audioPlayer.shuffleIndices;
+      log('Shuffle indices: $shuffleIndices');
+      log('Current index: ${_audioPlayer.currentIndex}');
+
+      if (shuffleIndices != null && shuffleIndices.isNotEmpty) {
+        final currentShuffledIndex =
+            shuffleIndices.indexOf(_audioPlayer.currentIndex!);
+
+        final nextShuffledIndex =
+            (currentShuffledIndex + 1) % shuffleIndices.length;
+        final nextIndex = shuffleIndices[nextShuffledIndex];
+
+        log('Next shuffled index: $nextIndex');
+        await _audioPlayer.seek(Duration.zero, index: nextIndex);
+        state = state.copyWith(currentSongIndex: nextIndex);
+      }
     } else {
       if (state.repeatMode == LoopMode.one) {
         await _audioPlayer.seek(Duration.zero);
@@ -176,7 +206,7 @@ class MusicNotifier extends StateNotifier<MusicState> {
     bool isShuffling = !state.isShuffle;
     _audioPlayer.setShuffleModeEnabled(isShuffling);
     state = state.copyWith(isShuffle: isShuffling);
-    print('Shuffle mode is now: $isShuffling');
+    //print('Shuffle mode is now: $isShuffling');
   }
 
   // Método para alternar entre modos de repetición
@@ -197,7 +227,7 @@ class MusicNotifier extends StateNotifier<MusicState> {
     final currentIndex = _audioPlayer.currentIndex ?? state.currentSongIndex;
     if (currentIndex != state.currentSongIndex) {
       state = state.copyWith(currentSongIndex: currentIndex);
-      print('Current index updated: $currentIndex');
+      //print('Current index updated: $currentIndex');
     }
   }
 }
